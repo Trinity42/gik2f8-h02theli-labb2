@@ -1,25 +1,16 @@
-todoForm.title.addEventListener('keyup', (e) => validateField(e.target));
-todoForm.title.addEventListener('blur', (e) => validateField(e.target));
-todoForm.description.addEventListener('input', (e) => validateField(e.target));
-todoForm.description.addEventListener('blur', (e) => validateField(e.target));
-todoForm.dueDate.addEventListener('input', (e) => validateField(e.target));
-todoForm.dueDate.addEventListener('blur', (e) => validateField(e.target));
+'use strict';
 
-todoForm.addEventListener('submit', onSubmit);
-
-const todoListElement = document.getElementById('todoList');
+// const { resourceUsage } = require('process');
 
 let titleValid = true;
 let descriptionValid = true;
 let dueDateValid = true;
-
 const api = new Api('http://localhost:5000/tasks');
+const toDoListElement = document.getElementById('todoList');
 
-function validateField(field) {
+const validateField = (field) => {
   const { name, value } = field;
-
-  let = validationMessage = '';
-
+  let validationMessage = '';
   switch (name) {
     case 'title': {
       if (value.length < 2) {
@@ -27,7 +18,8 @@ function validateField(field) {
         validationMessage = "Fältet 'Titel' måste innehålla minst 2 tecken.";
       } else if (value.length > 100) {
         titleValid = false;
-        validationMessage = "Fältet 'Titel' får inte innehålla mer än 100 tecken.";
+        validationMessage =
+          "Fältet 'Titel' får inte innehålla mer än 100 tecken.";
       } else {
         titleValid = true;
       }
@@ -35,8 +27,11 @@ function validateField(field) {
     }
     case 'description': {
       if (value.length > 500) {
+        // lite onödigt då inte går att skriva mer än 500 tecken då max är satt till 500
         descriptionValid = false;
-        validationMessage = "Fältet 'Beskrvining' får inte innehålla mer än 500 tecken.";
+        validationMessage =
+          "Fältet 'Beskrivning' får inte innehålla mer än 500 tecken.";
+        console.log(validationMessage);
       } else {
         descriptionValid = true;
       }
@@ -44,78 +39,87 @@ function validateField(field) {
     }
     case 'dueDate': {
       if (value.length === 0) {
-        dueDateValid = false;
-        validationMessage = "Fältet 'Slutförd senast' är obligatorisk.";
+        descriptionValid = false;
+        validationMessage = "Fältet 'Slutförd senast' är obligatorisk'.";
       } else {
         dueDateValid = true;
       }
       break;
     }
+    default:
+      break;
   }
-
   field.previousElementSibling.innerText = validationMessage;
   field.previousElementSibling.classList.remove('hidden');
-}
+};
 
-function onSubmit(e) {
-  e.preventDefault();
-  if (titleValid && descriptionValid && dueDateValid) {
-    console.log('Submit');
-    saveTask();
-  }
-}
-
-function saveTask() {
+const saveTask = () => {
   const task = {
     title: todoForm.title.value,
     description: todoForm.description.value,
     dueDate: todoForm.dueDate.value,
-    completed: false
+    completed: false,
   };
-
   api.create(task).then((task) => {
     if (task) {
       renderList();
     }
   });
-}
-
-function renderList() {
-  console.log('rendering');
+};
+const renderList = () => {
+  //   console.log('rendering');
   api.getAll().then((tasks) => {
-    todoListElement.innerHTML = '';
+    toDoListElement.innerHTML = '';
     if (tasks && tasks.length > 0) {
-      tasks.forEach((task) => {
-        todoListElement.insertAdjacentHTML('beforeend', renderTask(task));
-      });
+      tasks.forEach((task) =>
+        toDoListElement.insertAdjacentHTML('beforeend', renderTask(task))
+      );
     }
   });
-}
+};
 
-function renderTask({ id, title, description, dueDate }) {
+const renderTask = ({ id, title, description, dueDate }) => {
   let html = `
-    <li class="select-none mt-2 py-2 border-b border-amber-300">
-      <div class="flex items-center">
-        <h3 class="mb-3 flex-1 text-xl font-bold text-pink-800 uppercase">${title}</h3>
-        <div>
-          <span>${dueDate}</span>
-          <button onclick="deleteTask(${id})" class="inline-block bg-amber-500 text-xs text-amber-900 border border-white px-3 py-1 rounded-md ml-2">Ta bort</button>
-        </div>
-      </div>`;
+    <li class="select-none mt-2 py-2 border-b border-slate-400">
+        <div class="flex items-center">
+            <h3 class="mb-3 flex-1 text-xl font-bold text-slate-800 uppercase">${title}</h3>
+            <div>
+            <span>${dueDate} </span>
+            </div>
+            <button onclick="deleteTask(${id})" class="inline-block bg-slate-300 text-xs text-slate-900 border-2 border-black p-1 hover:bg-slate-400 rounded-md ml-2">Ta bort</buttonA>
+        </div>`;
   description &&
     (html += `
-      <p class="ml-8 mt-2 text-xs italic">${description}</p>
-  `);
-  html += `
-    </li>`;
+            <p class="ml-8 mt-2 text-xs italic">${description}</p>
+            `);
+  html += `</li>`;
 
   return html;
-}
+};
 
-function deleteTask(id) {
+const onSubmit = (e) => {
+  e.preventDefault();
+  if (titleValid && descriptionValid && dueDateValid) {
+    // console.log('submit');
+    saveTask();
+    todoForm.reset();
+  }
+};
+
+const deleteTask = (id) => {
   api.remove(id).then((result) => {
     renderList();
   });
-}
+};
 
 renderList();
+todoForm.title.addEventListener('input', (e) => validateField(e.target));
+todoForm.title.addEventListener('blur', (e) => validateField(e.target));
+
+todoForm.description.addEventListener('input', (e) => validateField(e.target));
+todoForm.description.addEventListener('blur', (e) => validateField(e.target));
+
+todoForm.dueDate.addEventListener('input', (e) => validateField(e.target));
+todoForm.dueDate.addEventListener('blur', (e) => validateField(e.target));
+
+todoForm.addEventListener('submit', onSubmit);
