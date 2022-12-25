@@ -1,14 +1,15 @@
 'use strict';
 
-// const { resourceUsage } = require('process');
+let titleValid = false;
+let descriptionValid = false;
+let dueDateValid = false;
 
-let titleValid = true;
-let descriptionValid = true;
-let dueDateValid = true;
 const api = new Api('http://localhost:5000/tasks');
 const toDoListElement = document.getElementById('todoList');
+const sortButton = document.getElementById('sortButton');
 
 const validateField = (field) => {
+  // console.log(field);
   const { name, value } = field;
   let validationMessage = '';
   switch (name) {
@@ -66,8 +67,8 @@ const saveTask = () => {
     }
   });
 };
+
 const renderList = () => {
-  //   console.log('rendering');
   api.getAll().then((tasks) => {
     toDoListElement.innerHTML = '';
     if (tasks && tasks.length > 0) {
@@ -77,12 +78,21 @@ const renderList = () => {
     }
   });
 };
+// det går att trycka i att en uppgift är gjort men det går inte att ångra sig
+const renderTask = ({ id, title, description, dueDate, completed }) => {
+  let tasks = { id, title, description, dueDate, completed };
 
-const renderTask = ({ id, title, description, dueDate }) => {
+  let html1 = `<button onclick="updateTask(${id})" id="checkMarker" class="border-double align-bottom p-2.5 border-4 border-slate-900"></button>`;
+  let html2 = `&#9989; `;
+  let text1 = `<h3 class="mb-3 flex-1 text-xl font-bold text-slate-800 uppercase">`;
+  let text2 = `<h3 class="mb-3 flex-1 text-xl font-bold text-slate-400 uppercase">`;
   let html = `
     <li class="select-none mt-2 py-2 border-b border-slate-400">
         <div class="flex items-center">
-            <h3 class="mb-3 flex-1 text-xl font-bold text-slate-800 uppercase">${title}</h3>
+            `;
+  html += tasks.completed ? text2 : text1;
+  html += tasks.completed ? html2 : html1;
+  html += `${title}</h3>
             <div>
             <span>${dueDate} </span>
             </div>
@@ -98,6 +108,7 @@ const renderTask = ({ id, title, description, dueDate }) => {
 };
 
 const onSubmit = (e) => {
+  // console.log(e);
   e.preventDefault();
   if (titleValid && descriptionValid && dueDateValid) {
     // console.log('submit');
@@ -106,13 +117,60 @@ const onSubmit = (e) => {
   }
 };
 
+const onReset = () => todoForm.reset();
+
 const deleteTask = (id) => {
   api.remove(id).then((result) => {
     renderList();
   });
 };
+const updateTask = (id) => {
+  api.update(id).then((result) => {
+    renderList();
+  });
+};
 
+//sorterar efter datum, kollar först de datum som inte är completed och sen de som är completed
+// slår sen i ihop dem
+const sorting = () => {
+  api.getAll().then((tasks) => {
+    const list1 = [];
+    const list2 = [];
+
+    for (let i = 0; i < tasks.length; i++) {
+      let obj = tasks[i];
+      if (!obj.completed) {
+        list1.push(obj);
+      } else {
+        list2.push(obj);
+      }
+    }
+
+    let sorted1 = list1.sort((t1, t2) => {
+      const date1 = t1.dueDate;
+      const date2 = t2.dueDate;
+      if (date1 < date2) return -1;
+      if (date1 > date2) return 1;
+      return 0;
+    });
+    let sorted2 = list2.sort((t1, t2) => {
+      const date1 = t1.dueDate;
+      const date2 = t2.dueDate;
+      if (date1 < date2) return -1;
+      if (date1 > date2) return 1;
+      return 0;
+    });
+    const sorted = [...sorted1, ...sorted2];
+
+    toDoListElement.innerHTML = '';
+    sorted.forEach((sort) =>
+      toDoListElement.insertAdjacentHTML('beforeend', renderTask(sort))
+    );
+  });
+};
+sortButton.addEventListener('click', sorting);
 renderList();
+
 todoForm.title.addEventListener('input', (e) => validateField(e.target));
 todoForm.title.addEventListener('blur', (e) => validateField(e.target));
 
@@ -123,3 +181,4 @@ todoForm.dueDate.addEventListener('input', (e) => validateField(e.target));
 todoForm.dueDate.addEventListener('blur', (e) => validateField(e.target));
 
 todoForm.addEventListener('submit', onSubmit);
+todoForm.addEventListener('reset', onReset);

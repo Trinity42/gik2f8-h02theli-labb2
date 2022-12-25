@@ -20,7 +20,7 @@ app
   });
 
 app.get('/tasks', async (req, res) => {
-  //   res.status(418).send('GET-anrop');
+  // res.status(418).send('GET-anrop');
   try {
     const tasks = await fs.readFile('./tasks.json');
     res.send(JSON.parse(tasks));
@@ -43,7 +43,7 @@ app.post('/tasks', async (req, res) => {
     }
     const newTask = { id: taskId + 1, ...task };
     const newList = currentTask ? [...currentTask, newTask] : [newTask];
-    //console.log(newList);
+    // console.log(newList, newTask);
     await fs.writeFile('./tasks.json', JSON.stringify(newList));
     res.send(newTask);
   } catch (error) {
@@ -52,11 +52,11 @@ app.post('/tasks', async (req, res) => {
 });
 
 app.delete('/tasks/:id', async (req, res) => {
-  // console.log(req);
   try {
     const id = req.params.id;
     const listBuffer = await fs.readFile('./tasks.json');
     const currentTask = JSON.parse(listBuffer);
+    // console.log(listBuffer, 'Här');
     if (currentTask.length > 0) {
       // console.log(currentTask.filter((task) => task.id != id));
       await fs.writeFile(
@@ -70,5 +70,22 @@ app.delete('/tasks/:id', async (req, res) => {
   } catch (error) {
     res.status(500).send({ error: error.stack });
   }
+});
+
+app.patch('/tasks/:id', async (req, res) => {
+  res.send('PATCH succesful');
+  try {
+    const id = Number(req.params.id);
+    // console.log(id);
+    const listBuffer = await fs.readFile('./tasks.json');
+    const currentTask = JSON.parse(listBuffer);
+    // console.log(currentTask);
+    const foundTask = currentTask.find((task) => task.id === id);
+    foundTask.completed = true;
+    await fs.writeFile('./tasks.json', JSON.stringify(currentTask));
+  } catch (error) {
+    res.status(500).send({ error: error.stack });
+  }
+  // console.log(req);
 });
 app.listen(PORT, () => console.log(`Server running on http://localhost:5000`));

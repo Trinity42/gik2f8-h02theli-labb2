@@ -40,4 +40,12 @@ class Api {
       .then((result) => result)
       .catch((err) => console.log(err, 'Det blev fel'));
   }
+  update(id) {
+    // console.log(id);
+    return fetch(`${this.url}/${id}`, {
+      method: 'PATCH',
+    })
+      .then((result) => result)
+      .catch((err) => console.log(err, 'Det blev fel'));
+  }
 }

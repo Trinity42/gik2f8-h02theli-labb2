@@ -5,10 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css" />
+
     <link rel="shortcut icon" href="#" />
     <title>Todo-applikation</title>
-    <script src="script.js" defer></script>
   </head>
   <body>
     <main
@@ -58,20 +57,40 @@
                 id="dueDate"
                 class="w-full rounded-md border-slate-500 border-2 focus-within:outline-none focus:border-slate-900 px-4 py-2" />
             </section>
-            <button
-              name="submitTodoForm"
-              class="rounded-md bg-slate-500 hover:bg-slate-400 border-2 border-black px-4 py-1"
-              type="submit">
-              Spara
-            </button>
+            <section class="grid gap-4 grid-cols-4">
+              <button
+                name="submitTodoForm"
+                class="rounded-md bg-slate-500 active:border-none active:border-opacity-75 hover:bg-slate-400 border-2 border-black px-4 py-1"
+                type="submit">
+                Spara
+              </button>
+              <button
+                id="clearForm"
+                name="clearForm"
+                class="rounded-md bg-slate-500 active:border-none hover:bg-slate-400 border-2 border-black px-4 py-1"
+                type="reset">
+                Rensa
+              </button>
+            </section>
           </form>
         </section>
         <section class="flex-1 px-5">
-          <h2 class="mb-6 text-3xl text-slate-900">Alla uppgifter</h2>
+          <div class="grid gap-4 grid-cols-2 p-2.5">
+            <h2 class="mb-6 text-3xl text-slate-900">Alla uppgifter</h2>
+            <button
+              name="submitTodoForm"
+              id="sortButton"
+              class="rounded-md bg-slate-500 active:border-none active:border-opacity-75 hover:bg-slate-400 border-2 border-black"
+              type="button">
+              Sortera efter datum
+            </button>
+          </div>
           <ul id="todoList"></ul>
         </section>
       </section>
     </main>
+
     <script src="Api.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>
